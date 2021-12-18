@@ -28,9 +28,8 @@ async fn get_page(url: &str) -> Result<String, reqwest::Error> {
     return Ok(result);
 }
 
-async fn get_api_json(url: &str) -> Result<String, reqwest::Error> {
-    let result = reqwest::get(url).await?.text().await?;
-    return Ok(result);
+fn parse_json(value: &str) -> json::JsonValue {
+    json::parse(&value).unwrap()
 }
 
 fn parse_homepage(html: String) -> Vec<String> {
@@ -64,7 +63,7 @@ async fn parse_category_page(
     category_ids.push(category_id.into());
 
     let api_category_url = make_search_api_url(category_id.into(), "0");
-    let api_request = get_api_json(&api_category_url);
+    let api_request = get_page(&api_category_url);
     let response = match api_request.await {
         Ok(v) => v,
         _ => {
@@ -73,7 +72,7 @@ async fn parse_category_page(
         }
     };
 
-    let json = json::parse(&response).unwrap();
+    let json = parse_json(&response);
     let filters = &json["universes"]["universe"][0]["facetmap"][0]["filter"][0]["filtersection"];
 
     let mut child_category_ids: Vec<String> = Vec::new();
