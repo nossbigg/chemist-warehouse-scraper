@@ -6,13 +6,14 @@ const CHEMIST_WAREHOUSE_URL_HOMEPAGE: &str = "https://www.chemistwarehouse.com.a
 
 #[derive(Clone)]
 struct MyNode {
+    name: String,
     from: String,
     to: String,
 }
 
 impl fmt::Debug for MyNode {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> fmt::Result {
-        write!(f, "{} -> {}", self.from, self.to)
+        write!(f, "{}: {} -> {}", self.name, self.from, self.to)
     }
 }
 
@@ -85,6 +86,7 @@ fn get_top_level_category_ids(category_urls: Vec<String>) -> Vec<MyNode> {
         let category_id = &captures[1];
 
         let entry = MyNode {
+            name: "".to_string(),
             from: "".to_string(),
             to: category_id.into(),
         };
@@ -110,6 +112,9 @@ async fn parse_category_page(category_id: &str) -> Vec<MyNode> {
 
     let mut child_category_ids: Vec<MyNode> = Vec::new();
     for filter in filters.members() {
+        let child_category_name_value = &filter["link"]["name"];
+        let child_category_name = child_category_name_value.as_str().unwrap();
+
         let child_category_id_value = &filter["value"]["value"];
         let child_category_id = match get_category_id(child_category_id_value.as_str().unwrap()) {
             Some(v) => v,
@@ -117,6 +122,7 @@ async fn parse_category_page(category_id: &str) -> Vec<MyNode> {
         };
 
         let entry = MyNode {
+            name: child_category_name.into(),
             from: category_id.into(),
             to: child_category_id,
         };
