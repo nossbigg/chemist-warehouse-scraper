@@ -111,7 +111,10 @@ async fn parse_category_page(category_id: &str) -> Vec<MyNode> {
     let mut child_category_ids: Vec<MyNode> = Vec::new();
     for filter in filters.members() {
         let child_category_id_value = &filter["value"]["value"];
-        let child_category_id = get_category_id(child_category_id_value.as_str().unwrap());
+        let child_category_id = match get_category_id(child_category_id_value.as_str().unwrap()) {
+            Some(v) => v,
+            None => continue,
+        };
 
         let entry = MyNode {
             from: category_id.into(),
@@ -123,11 +126,16 @@ async fn parse_category_page(category_id: &str) -> Vec<MyNode> {
     return child_category_ids;
 }
 
-fn get_category_id(value: &str) -> String {
+fn get_category_id(value: &str) -> Option<String> {
     let category_id_matcher = Regex::new(r"chemau(\d+)$").unwrap();
-    let captures = category_id_matcher.captures_iter(&value).nth(0).unwrap();
+
+    let captures = match category_id_matcher.captures_iter(&value).nth(0) {
+        Some(v) => v,
+        None => return None,
+    };
+
     let category_id = &captures[1];
-    return category_id.into();
+    return Some(category_id.into());
 }
 
 fn make_search_api_url(category_id: &str, index: &str) -> String {
