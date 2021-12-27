@@ -2,6 +2,7 @@ use std::fmt;
 
 #[derive(Clone)]
 struct MyItem {
+    id: String,
     name: String,
     brand: String,
     price: String,
@@ -13,8 +14,8 @@ impl fmt::Debug for MyItem {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> fmt::Result {
         write!(
             f,
-            "{}, {}, {}, {}, {}",
-            self.name, self.brand, self.price, self.price_rrp, self.product_url
+            "{}, {}, {}, {}, {}, {}",
+            self.id, self.name, self.brand, self.price, self.price_rrp, self.product_url
         )
     }
 }
@@ -38,6 +39,7 @@ pub async fn handle_catalog(category_id: String) {
             let attributes = &repsonse_item["attribute"];
 
             let mut my_item = MyItem {
+                id: "".to_string(),
                 name: "".to_string(),
                 brand: "".to_string(),
                 price: "".to_string(),
@@ -50,6 +52,7 @@ pub async fn handle_catalog(category_id: String) {
                 let attribute_value = attribute["value"][0]["value"].as_str().unwrap().to_string();
 
                 match attribute_name {
+                    "secondid" => my_item.id = attribute_value,
                     "name" => my_item.name = attribute_value,
                     "brand" => my_item.brand = attribute_value,
                     "price_cw_au" => my_item.price = attribute_value,
