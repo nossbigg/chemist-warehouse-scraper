@@ -18,7 +18,9 @@ impl fmt::Debug for MyNode {
 }
 
 #[tokio::main]
-pub async fn handle_catalogs() {
+pub async fn handle_catalogs(max_catalogs_depth_str: String) {
+    let max_catalogs_depth = max_catalogs_depth_str.parse().unwrap_or(1);
+
     let homepage_request = get_page(CHEMIST_WAREHOUSE_URL_HOMEPAGE);
     let html: String = match homepage_request.await {
         Ok(v) => v,
@@ -31,10 +33,11 @@ pub async fn handle_catalogs() {
     let top_level_category_urls = parse_homepage(html);
     let top_level_category_ids = get_top_level_category_ids(top_level_category_urls);
 
+    let mut current_depth = 0;
     let mut all_nodes: Vec<MyNode> = Vec::new();
     let mut current_nodes: Vec<MyNode> = top_level_category_ids;
 
-    while current_nodes.len() > 0 {
+    while current_nodes.len() > 0 && current_depth < max_catalogs_depth {
         let mut next_nodes: Vec<MyNode> = Vec::new();
 
         for entry in current_nodes {
@@ -44,6 +47,8 @@ pub async fn handle_catalogs() {
 
         current_nodes = next_nodes.to_owned();
         all_nodes.append(&mut next_nodes);
+
+        current_depth = current_depth + 1;
     }
 }
 

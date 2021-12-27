@@ -13,17 +13,15 @@ fn main() {
     args.nth(0);
 
     let command_option = args.nth(0);
-    let command = match command_option {
-        Some(v) => v,
-        None => String::from(""),
-    };
+    let command = command_option.unwrap_or_default();
 
     if command == "catalogs" {
-        handle_catalogs();
+        let max_catalogs_depth_str = args.nth(0).unwrap_or("1".to_string());
+        handle_catalogs(max_catalogs_depth_str);
     }
 
     if command == "catalog" {
-        let category_id = args.nth(0);
-        handle_catalog(category_id.unwrap());
+        let category_id = args.nth(0).unwrap_or_default();
+        handle_catalog(category_id);
     }
 }
