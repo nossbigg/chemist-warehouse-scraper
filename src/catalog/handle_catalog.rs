@@ -1,6 +1,8 @@
+use serde::Serialize;
 use std::fmt;
+use std::fs::File;
 
-#[derive(Clone)]
+#[derive(Clone, Serialize)]
 struct MyItem {
     id: String,
     name: String,
@@ -24,11 +26,16 @@ const API_INDEX_INCREMENT: i32 = 45;
 
 #[tokio::main]
 pub async fn handle_catalog(category_id: String) {
+    let items = get_items(&category_id).await;
+    write_csv(items, &category_id);
+}
+
+async fn get_items(category_id: &str) -> Vec<MyItem> {
     let mut items: Vec<MyItem> = Vec::new();
 
     let mut current_index: i32 = 0;
     loop {
-        let url = make_search_api_url(&category_id, &current_index.to_string());
+        let url = make_search_api_url(category_id, &current_index.to_string());
         let response = get_page(&url).await;
         let json = parse_json(response.unwrap().as_str());
         let repsonse_items = &json["universes"]["universe"][0]["items-section"]["items"]["item"];
@@ -71,6 +78,24 @@ pub async fn handle_catalog(category_id: String) {
 
         current_index = current_index + API_INDEX_INCREMENT;
     }
+
+    items
+}
+
+fn write_csv(items: Vec<MyItem>, category_id: &str) {
+    let filename = format!("catalog_{}.csv", category_id);
+    let file = File::create(filename).unwrap();
+
+    let mut wtr = csv::Writer::from_writer(file);
+
+    for item in items {
+        match wtr.serialize(&item) {
+            _ => (),
+        };
+    }
+    match wtr.flush() {
+        _ => (),
+    };
 }
 
 async fn get_page(url: &str) -> Result<String, reqwest::Error> {
