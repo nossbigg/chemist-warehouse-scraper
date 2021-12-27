@@ -62,10 +62,17 @@ fn parse_homepage(html: String) -> Vec<String> {
     let document = Html::parse_document(&html);
     let selector = Selector::parse("ul.menu-items > li > a").unwrap();
 
-    let categories_url = document
-        .select(&selector)
-        .map(|e| e.value().attr("href").unwrap().replace("\"", ""))
-        .filter(|href| category_url_matcher.is_match(&href))
+    fn get_category_url(e: &scraper::ElementRef) -> String {
+        return e.value().attr("href").unwrap().replace("\"", "");
+    }
+
+    let categories_url_elements = document.select(&selector).filter(|e| {
+        let href = get_category_url(&e);
+        return category_url_matcher.is_match(&href);
+    });
+
+    let categories_url = categories_url_elements
+        .map(|e| get_category_url(&e))
         .collect::<Vec<String>>();
 
     return categories_url;

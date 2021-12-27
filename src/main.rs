@@ -1,6 +1,7 @@
 use std::env;
 
-mod catalog;
+mod catalogs;
+use catalogs::handle_catalogs::handle_catalogs;
 
 fn main() {
     let mut args = env::args();
@@ -11,7 +12,7 @@ fn main() {
         None => String::from(""),
     };
 
-    if command == "catalog" {
-        catalog::handle_catalogs();
+    if command == "catalogs" {
+        handle_catalogs();
     }
 }
