@@ -1,6 +1,6 @@
 use super::structs::MyItem;
+use super::write_csv::write_csv;
 use crate::common::utils::{get_page, make_search_api_url, parse_json};
-use std::fs::File;
 
 const API_INDEX_INCREMENT: i32 = 45;
 
@@ -60,20 +60,4 @@ async fn get_items(category_id: &str) -> Vec<MyItem> {
     }
 
     items
-}
-
-fn write_csv(items: Vec<MyItem>, category_id: &str) {
-    let filename = format!("catalog_{}.csv", category_id);
-    let file = File::create(filename).unwrap();
-
-    let mut wtr = csv::Writer::from_writer(file);
-
-    for item in items {
-        match wtr.serialize(&item) {
-            _ => (),
-        };
-    }
-    match wtr.flush() {
-        _ => (),
-    };
 }

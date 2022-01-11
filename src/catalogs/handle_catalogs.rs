@@ -1,8 +1,8 @@
-use crate::catalogs::structs::{MyNode, ParseHomepageNode};
+use super::structs::{MyNode, ParseHomepageNode};
+use super::write_csv::write_csv;
 use crate::common::utils::{get_page, make_search_api_url, parse_json};
 use regex::Regex;
 use scraper::{Html, Selector};
-use std::fs::File;
 
 const CHEMIST_WAREHOUSE_URL_HOMEPAGE: &str = "https://www.chemistwarehouse.com.au";
 
@@ -162,20 +162,4 @@ fn get_category_id(value: &str) -> Option<String> {
 
     let category_id = &captures[1];
     return Some(category_id.into());
-}
-
-fn write_csv(nodes: Vec<MyNode>) {
-    let filename = format!("catalogs.csv");
-    let file = File::create(filename).unwrap();
-
-    let mut wtr = csv::Writer::from_writer(file);
-
-    for node in nodes {
-        match wtr.serialize(&node) {
-            _ => (),
-        };
-    }
-    match wtr.flush() {
-        _ => (),
-    };
 }
