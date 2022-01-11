@@ -67,7 +67,12 @@ fn parse_json(value: &str) -> json::JsonValue {
     json::parse(&value).unwrap()
 }
 
-fn parse_homepage(html: String) -> Vec<String> {
+struct ParseHomepageNode {
+    category_url: String,
+    category_title: String,
+}
+
+fn parse_homepage(html: String) -> Vec<ParseHomepageNode> {
     let category_url_matcher = Regex::new(r"shop-online").unwrap();
 
     let document = Html::parse_document(&html);
@@ -77,23 +82,47 @@ fn parse_homepage(html: String) -> Vec<String> {
         return e.value().attr("href").unwrap().replace("\"", "");
     }
 
+    fn handle_category_url_element(e: &scraper::ElementRef) -> ParseHomepageNode {
+        let category_url = e.value().attr("href").unwrap().replace("\"", "");
+        let category_title = format!(
+            "{}",
+            e.first_child()
+                .unwrap()
+                .first_child()
+                .unwrap()
+                .value()
+                .as_text()
+                .unwrap()
+                .text,
+        );
+
+        let result = ParseHomepageNode {
+            category_url,
+            category_title,
+        };
+        result
+    }
+
     let categories_url_elements = document.select(&selector).filter(|e| {
         let href = get_category_url(&e);
         return category_url_matcher.is_match(&href);
     });
 
     let categories_url = categories_url_elements
-        .map(|e| get_category_url(&e))
-        .collect::<Vec<String>>();
+        .map(|e| handle_category_url_element(&e))
+        .collect::<Vec<ParseHomepageNode>>();
 
     return categories_url;
 }
 
-fn get_top_level_category_ids(category_urls: Vec<String>) -> Vec<MyNode> {
+fn get_top_level_category_ids(category_urls: Vec<ParseHomepageNode>) -> Vec<MyNode> {
     let category_id_matcher = Regex::new(r"shop-online/(\d+)").unwrap();
     let mut category_ids: Vec<MyNode> = Vec::new();
 
-    for category_url in category_urls {
+    for entry in category_urls {
+        let category_url = entry.category_url;
+        let category_title = entry.category_title;
+
         if !category_id_matcher.is_match(&category_url) {
             continue;
         }
@@ -104,8 +133,8 @@ fn get_top_level_category_ids(category_urls: Vec<String>) -> Vec<MyNode> {
         let category_id = &captures[1];
 
         let entry = MyNode {
-            name: "".to_string(),
-            from: "".to_string(),
+            name: category_title.to_string(),
+            from: "Ø".to_string(),
             to: category_id.into(),
         };
         category_ids.push(entry);
