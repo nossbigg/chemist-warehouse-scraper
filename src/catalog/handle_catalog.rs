@@ -1,27 +1,6 @@
+use super::structs::MyItem;
 use crate::common::utils::{get_page, make_search_api_url, parse_json};
-use serde::Serialize;
-use std::fmt;
 use std::fs::File;
-
-#[derive(Clone, Serialize)]
-struct MyItem {
-    id: String,
-    name: String,
-    brand: String,
-    price: String,
-    price_rrp: String,
-    product_url: String,
-}
-
-impl fmt::Debug for MyItem {
-    fn fmt(&self, f: &mut std::fmt::Formatter) -> fmt::Result {
-        write!(
-            f,
-            "{}, {}, {}, {}, {}, {}",
-            self.id, self.name, self.brand, self.price, self.price_rrp, self.product_url
-        )
-    }
-}
 
 const API_INDEX_INCREMENT: i32 = 45;
 

@@ -1,24 +1,10 @@
+use crate::catalogs::structs::{MyNode, ParseHomepageNode};
 use crate::common::utils::{get_page, make_search_api_url, parse_json};
 use regex::Regex;
 use scraper::{Html, Selector};
-use serde::Serialize;
-use std::fmt;
 use std::fs::File;
 
 const CHEMIST_WAREHOUSE_URL_HOMEPAGE: &str = "https://www.chemistwarehouse.com.au";
-
-#[derive(Clone, Serialize)]
-struct MyNode {
-    name: String,
-    from: String,
-    to: String,
-}
-
-impl fmt::Debug for MyNode {
-    fn fmt(&self, f: &mut std::fmt::Formatter) -> fmt::Result {
-        write!(f, "{}: {} -> {}", self.name, self.from, self.to)
-    }
-}
 
 #[tokio::main]
 pub async fn handle_catalogs(max_catalogs_depth_str: String) {
@@ -57,11 +43,6 @@ pub async fn handle_catalogs(max_catalogs_depth_str: String) {
     }
 
     write_csv(all_nodes);
-}
-
-struct ParseHomepageNode {
-    category_url: String,
-    category_title: String,
 }
 
 fn parse_homepage(html: String) -> Vec<ParseHomepageNode> {
