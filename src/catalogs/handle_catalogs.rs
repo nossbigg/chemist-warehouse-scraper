@@ -1,3 +1,4 @@
+use crate::common::utils::{get_page, make_search_api_url, parse_json};
 use regex::Regex;
 use scraper::{Html, Selector};
 use serde::Serialize;
@@ -56,15 +57,6 @@ pub async fn handle_catalogs(max_catalogs_depth_str: String) {
     }
 
     write_csv(all_nodes);
-}
-
-async fn get_page(url: &str) -> Result<String, reqwest::Error> {
-    let result = reqwest::get(url).await?.text().await?;
-    return Ok(result);
-}
-
-fn parse_json(value: &str) -> json::JsonValue {
-    json::parse(&value).unwrap()
 }
 
 struct ParseHomepageNode {
@@ -189,10 +181,6 @@ fn get_category_id(value: &str) -> Option<String> {
 
     let category_id = &captures[1];
     return Some(category_id.into());
-}
-
-fn make_search_api_url(category_id: &str, index: &str) -> String {
-    return format!("https://www.chemistwarehouse.com.au/searchapi/webapi/search/category?category={}&index={}&sort=", category_id, index);
 }
 
 fn write_csv(nodes: Vec<MyNode>) {

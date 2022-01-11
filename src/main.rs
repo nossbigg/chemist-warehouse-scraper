@@ -1,3 +1,6 @@
+// exports
+pub mod common;
+
 use std::env;
 
 mod catalogs;

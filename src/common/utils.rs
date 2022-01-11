@@ -1,0 +1,12 @@
+pub async fn get_page(url: &str) -> Result<String, reqwest::Error> {
+    let result = reqwest::get(url).await?.text().await?;
+    return Ok(result);
+}
+
+pub fn make_search_api_url(category_id: &str, index: &str) -> String {
+    return format!("https://www.chemistwarehouse.com.au/searchapi/webapi/search/category?category={}&index={}&sort=", category_id, index);
+}
+
+pub fn parse_json(value: &str) -> json::JsonValue {
+    json::parse(&value).unwrap()
+}
