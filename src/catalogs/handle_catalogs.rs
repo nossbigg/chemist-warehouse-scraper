@@ -1,10 +1,12 @@
 use regex::Regex;
 use scraper::{Html, Selector};
+use serde::Serialize;
 use std::fmt;
+use std::fs::File;
 
 const CHEMIST_WAREHOUSE_URL_HOMEPAGE: &str = "https://www.chemistwarehouse.com.au";
 
-#[derive(Clone)]
+#[derive(Clone, Serialize)]
 struct MyNode {
     name: String,
     from: String,
@@ -35,6 +37,8 @@ pub async fn handle_catalogs(max_catalogs_depth_str: String) {
 
     let mut current_depth = 0;
     let mut all_nodes: Vec<MyNode> = Vec::new();
+    all_nodes.append(&mut top_level_category_ids.to_owned());
+
     let mut current_nodes: Vec<MyNode> = top_level_category_ids;
 
     while current_nodes.len() > 0 && current_depth < max_catalogs_depth {
@@ -50,6 +54,8 @@ pub async fn handle_catalogs(max_catalogs_depth_str: String) {
 
         current_depth = current_depth + 1;
     }
+
+    write_csv(all_nodes);
 }
 
 async fn get_page(url: &str) -> Result<String, reqwest::Error> {
@@ -158,4 +164,20 @@ fn get_category_id(value: &str) -> Option<String> {
 
 fn make_search_api_url(category_id: &str, index: &str) -> String {
     return format!("https://www.chemistwarehouse.com.au/searchapi/webapi/search/category?category={}&index={}&sort=", category_id, index);
+}
+
+fn write_csv(nodes: Vec<MyNode>) {
+    let filename = format!("catalogs.csv");
+    let file = File::create(filename).unwrap();
+
+    let mut wtr = csv::Writer::from_writer(file);
+
+    for node in nodes {
+        match wtr.serialize(&node) {
+            _ => (),
+        };
+    }
+    match wtr.flush() {
+        _ => (),
+    };
 }
